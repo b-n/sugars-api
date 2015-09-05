@@ -31,10 +31,6 @@ export function run(appdir) {
   
   app.set('port', (process.env.PORT || 5000));
 
-  app.get('/', function(request, response) {
-    response.sendFile(app.dir + '/index.html');
-  });
-
   app.all('/api/:call/:mod*?', function(request, response) {
     //call the api handle function to handle the call. return responses where needed 
     api.handle(request).then(function(result) {
