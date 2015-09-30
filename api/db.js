@@ -6,7 +6,7 @@ export class DB {
     this.__db_connString = process.env.DATABASE_URL;
     this.__db_connOptions = {
       dialectOptions: {
-        ssl: (process.env.ENVIRONMENT == 'dev')?true:false
+        ssl: (process.env.ENVIRONMENT == 'dev')
       }
     }
   }
@@ -22,6 +22,7 @@ export class DB {
   init(options) {
     return new Promise((resolve, reject) => {
       //start the database connector
+      console.log(this.__db_connString);
       this.sequelize = new Sequelize(this.__db_connString, this.__db_connOptions);
        
       this.User = this.sequelize.define('user', {

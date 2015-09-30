@@ -13,45 +13,49 @@ export class Food {
       //call the database init.
       this.db.init().then((result) => {
         //success, lets query the request
-        this.db.User.find({
+        return this.db.User.find({
           include: [ { model: this.db.Food, as: 'Foods' } ], 
-          where: {
-            firstName: 'Bex',
-            lastName: 'Hill'
-          }
-        }).then(function(user) {
-          resolve(user.Foods);
-        }, reject);
-      }, reject);
+          where: { firstName: 'Bex', lastName: 'Hill' }
+        });
+      }).then(function(user) {
+        return resolve(user.Foods);
+      }).catch(function(err) {
+        return reject(err);
+      });
     });
   }
 
   addEntry(request) {
     return new Promise((resolve, reject) => {
       this.db.init().then((result) => {
-        this.db.User.find({
-          where: {
-            firstName: 'Bex',
-            lastName: 'Hill'
-          }
-        }).then((user) => {
-          this.db.sequelize.transaction((t) => {
-            var newFoods = [];
-            for (var nfood of request.body) {
-              newFoods.push(this.db.Food.create(
-                  nfood,
+        return this.db.User.find({
+          where: { firstName: 'Bex', lastName: 'Hill' }
+        });
+      }).then((user) => {
+        //reduce the request body, and resolve each promise request in order;
+        console.log(request.body);
+        return this.db.sequelize.transaction((t) => {
+          return request.body.reduce((foods, food) => {
+            //add next food item (food) into the promise list (foods)
+            return foods.then(() => {
+              //create food item, and when complete, link to user
+              return this.db.Food.create(
+                food,
+                { transaction : t }
+              ).then((food) => {
+                return user.addFood(
+                  food,
                   { transaction : t }
-                ).then((food) => {
-                  return user.addFood(food, { transaction : t });
-                })
-              );
-            }
-            return new Promise.all(newFoods).then((result) => {
-              resolve({status: 'success'});
-            }, reject);
-          });
-        }, reject);
-      }, reject);
+                );
+              });
+            });
+          }, Promise.resolve());
+        });
+      }).then((result) => {
+        resolve({status: "success"});   
+      }).catch((err) => {
+        reject(err);
+      });
     });
   }
 
@@ -88,23 +92,28 @@ export class Food {
 }
 
 export function handle(request) {
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     console.log('Food Handler: Request recieved');
     var food = new Food();
-    if (request.params.mod !== undefined) {
-      if (request.params.mod === 'add') {
-        food.addEntry(request).then(resolve, reject);
-      } else if (request.params.mod === 'edit') {
-        if (request.query.id === undefined) {
-          reject(new Error('No value defined under the id parameter'));
-          return;
-        }
-        food.modEntry(request).then(resolve,reject);
-      } else {
-        reject(new Error('Invalid api call: /api/food/' + request.params.mod));
-      }
-    } else {
-      food.getList(request).then(resolve, reject);
+
+    if (request.params.mod === undefined) {
+      return resolve(food.getList(request));
     }
+
+    if (request.params.mod === 'add') {
+      return resolve(food.addEntry(request));
+    }
+
+    if (request.params.mod === 'edit') {
+      if (request.query.id === undefined) {
+        throw new Error('No value defined under the id parameter');
+      }
+      return resolve(food.modEntry(request));
+    }
+
+    throw new Error('Invalid api call: /api/food/' + request.params.mod);
+  }).catch(function (err) {
+    console.log('ERROR: ' + err);
+    reject(err);
   });
 }
