@@ -52,9 +52,9 @@ export class Food {
           }, Promise.resolve());
         });
       }).then((result) => {
-        resolve({status: "success"});   
+        return resolve({status: "success"});   
       }).catch((err) => {
-        reject(err);
+        return reject(err);
       });
     });
   }
@@ -62,30 +62,31 @@ export class Food {
   modEntry(request) {
     return new Promise((resolve, reject) => {
       this.db.init().then((result) => {
-        this.db.User.find({
-          where: {
-            firstName: 'Bex',
-            lastName: 'Hill'
-          }
-        }).then((user) => {
-          console.log(request.params);
+        return Promise.all([
+          this.db.User.find({
+            where: { firstName: 'Bex', lastName: 'Hill' }
+          }),
           this.db.Food.find({
-            where: {
-              id: request.query.id
-            }
-          }).then((food) => {
-            if (food.userUuid != user.uuid) {
-              reject('Food with ID ' + request.query.id + ' does not exist under this user');
-            } else {
-              if (request.body.name !== undefined) food.set('name', request.body.name);
-              if (request.body.unit !== undefined) food.set('unit', request.body.unit);
-              if (request.body.carbs !== undefined) food.set('carbs', request.body.carbs);
-              if (request.body.defaultAmount !== undefined) food.set('defaultAmount', request.body.defaultAmount);
-              food.save().then(resolve, reject);
-            }
-          },reject);
-        }, reject);
-      }, reject);
+            where: { id: request.query.id }
+          })
+        ]);
+      }).then((data) => {
+        let food = data[1];
+        let user = data[0];
+        if (food.userUuid != user.uuid) {
+          throw new Error('Food with ID ' + request.query.id + ' does not exist under this user');
+        }
+        
+        if (request.body.name !== undefined) food.set('name', request.body.name);
+        if (request.body.unit !== undefined) food.set('unit', request.body.unit);
+        if (request.body.carbs !== undefined) food.set('carbs', request.body.carbs);
+        if (request.body.defaultAmount !== undefined) food.set('defaultAmount', request.body.defaultAmount);
+        return food.save();
+      }).then((food) => {
+        return resolve({status: 'success'});
+      }).catch((err) => {
+        return reject(err);
+      });
     });
   }
 
