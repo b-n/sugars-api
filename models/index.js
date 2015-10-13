@@ -8,13 +8,14 @@ import FoodEntry from './foodentry'
 export default class db {
 
     constructor() {
-        this.__db_connString = process.env.DATABASE_URL;
-        this.__db_connOptions = {
+        let connString = process.env.DATABASE_URL;
+        let connOptions = {
             dialectOptions: {
                 ssl: (process.env.ENVIRONMENT == 'dev')
             }
         }
-        this.db = new Sequelize(this.__db_connString, this.__db_connOptions);
+        this.db = new Sequelize(connString, connOptions);
+        this.sequelize = Sequelize;
     }
 
     setupDb() {

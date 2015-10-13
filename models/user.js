@@ -6,7 +6,7 @@ export default function(db, DataTypes) {
         firstName: DataTypes.STRING(255),         
         lastName: DataTypes.STRING(255),
         authLoginType: DataTypes.STRING(32),
-        dailyLongActingUnits: DataTypes.DECIMAL(8, 3),
+//        dailyLongActingUnits: DataTypes.DECIMAL(8, 3),
         unitType: DataTypes.STRING(32),
         glLow: DataTypes.DECIMAL(8,3),          //low range on Glucose Level (in unitType)
         glHigh: DataTypes.DECIMAL(8,3),         //high range of Glucose Level (in unitType)

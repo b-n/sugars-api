@@ -11,3 +11,15 @@ export function enableCORS(req, res, next) {
     }
 };
 
+//to implement
+export function handleSuccess(result, res) {
+    let responseMessage = { status: 'success' };
+    if (result !== null) responseMessage.result = result;
+    res.status(200).send(responseMessage);
+}
+
+export function handleError(err, status, res) {
+    let responseMessage = { status: 'error' };
+    if (err.message !== null) responseMessage.message = err.message;
+    rest.status(status).send(responseMessage);
+}

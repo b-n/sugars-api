@@ -5,6 +5,7 @@ import dotenv from 'dotenv'
 
 import * as util from './src/server-util'
 import db from './models/index'
+import route from './routes/index'
 
 export function run() {
     //get environment variables
@@ -12,11 +13,14 @@ export function run() {
 
     let app = express();
     let database = new db();
+    let routes = new route(database, express);
     
     database.setupDb();    
 
     app.use(util.enableCORS);
     app.use(bodyParser.json());
+    
+    app.use(routes.getRoutes());
  
     app.set('port', (process.env.PORT || 5000));
 
