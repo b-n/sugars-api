@@ -1,8 +1,28 @@
-//Run that node like we're ES6'in errything
-var System = require('es6-module-loader').System;
+import express from 'express'
+import cowsay from 'cowsay'
+import bodyParser from 'body-parser'
+import dotenv from 'dotenv'
 
-System.import('./index').then(function(index) {
-    index.run(__dirname);
-}).catch(function(err) {
-    console.log(err);
-});
+import * as util from './src/server-util'
+import db from './models/index'
+
+export function run() {
+    //get environment variables
+    dotenv.load();
+
+    let app = express();
+    let database = new db();
+    
+    database.setupDb();    
+
+    app.use(util.enableCORS);
+    app.use(bodyParser.json());
+ 
+    app.set('port', (process.env.PORT || 5000));
+
+    app.listen(app.get('port'), function() {
+        console.log('Up and running on all cylinders');
+        console.log(cowsay.say({ text: 'mooooooo'}));
+    });
+
+}
