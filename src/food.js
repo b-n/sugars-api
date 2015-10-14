@@ -57,6 +57,8 @@ export function createRecords(req, db) {
     }); 
 }
 
+
+//TODO validate user before drop
 export function dropRecord(req, db) {
     return new Promise((resolve, reject) => {
         let id = req.params.id;
@@ -74,6 +76,7 @@ export function dropRecord(req, db) {
     });
 }
 
+//TODO validate user before update
 export function updateRecord(req, db) {
     return new Promise((resolve, reject) => {
         let id = req.params.id;

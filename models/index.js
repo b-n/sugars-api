@@ -15,7 +15,6 @@ export default class db {
             }
         }
         this.db = new Sequelize(connString, connOptions);
-        this.sequelize = Sequelize;
     }
 
     setupDb() {

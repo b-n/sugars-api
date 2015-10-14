@@ -7,7 +7,8 @@ export default class {
     }
 
     getRoute() {
-        this.route.get('/', (req,res) => this.list);
+        this.route.get('/', (req,res) => this.list(req, res));
+        this.route.post('/', (req, res) => this.create(req, res));
         return this.route;
     }
 
@@ -15,6 +16,10 @@ export default class {
         this.db.Entry.findAll().then(function(food) {
             res.status(200).send(food);
         });
+    }
+
+    create(req, res) {
+        
     }
 
 }

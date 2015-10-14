@@ -1,2 +1,2 @@
-var setup = require('./setup');
+var setup = require('./src/setup');
 require('./app').run();
