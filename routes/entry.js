@@ -1,4 +1,6 @@
 
+import * as entry from '../src/entry'
+
 export default class {
 
     constructor(db, express) {
@@ -13,8 +15,10 @@ export default class {
     }
 
     list(req, res) {
-        this.db.Entry.findAll().then(function(food) {
-            res.status(200).send(food);
+         entry.queryAll(req, this.db).then((result) => {
+            res.status(200).send(result);    
+        }).catch((err) => {
+            res.status(400).send(err.message);
         });
     }
 
