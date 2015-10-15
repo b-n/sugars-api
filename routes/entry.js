@@ -15,7 +15,7 @@ export default class {
     }
 
     list(req, res) {
-         entry.queryAll(req, this.db).then((result) => {
+         entry.queryAll(null, this.db).then((result) => {
             res.status(200).send(result);    
         }).catch((err) => {
             res.status(400).send(err.message);
