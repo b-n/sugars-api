@@ -1,46 +1,48 @@
 const updateableFields = [ 'name', 'units', 'carbs', 'defaultAmount' ];
 
-export function queryRecord(req, db) {
+export function queryRecord(foodId, userId, db) {
     return new Promise((resolve, reject) => {
-        let id = req.params.id;
         db.User.find({
-            include: [ { model: db.Food, as: 'Foods', where: { id: id } } ],
+            include: [ { model: db.Food, as: 'Foods', where: { id: foodId } } ],
             where: { firstName: 'Bex', lastName: 'Hill' }
-        }).then((user) => {
-            if (user === null) throw new Error(`could not find food with id: ${id}`);
+            //where: { id: userId }
+        }).then(user => {
+            if (user === null) throw new Error(`could not find food with id: ${foodId}`);
             
             //found record, return the first 
             resolve(user.Foods[0]);
-        }).catch((err) => {
+        }).catch(err => {
             reject(err);
         })
     });
 }
 
-export function queryAll(req, db) {
+export function queryAll(userId, db) {
     return new Promise((resolve, reject) => {
         db.User.find({
             include: [ { model: db.Food, as: 'Foods' } ],
             where: { firstName: 'Bex', lastName: 'Hill' }
-        }).then((user) => {
+            //where: { id: userId }
+        }).then(user => {
             resolve(user.Foods);
-        }).catch((err) => {
+        }).catch(err => {
             reject(err);
         })
     });
 }
 
-export function createRecords(req, db) {
+export function createRecords(foods, userId, db) {
     return new Promise((resolve, reject) => {
         db.User.find({
             where: { firstName: 'Bex', lastName: 'Hill' }
-        }).then((user) => {
+            //where: { id: userId }
+        }).then(user => {
             //set up the transaction
             return db.db.transaction((t) => {
-                //break the body into elements, and create transactions for each
-                return req.body.reduce((foods, food) => {
+                //break the foods into elements, and create transactions for each
+                return foods.reduce((foodPromises, food) => {
                     //each food, append to foods promise chain
-                    return foods.then(() => {
+                    return foodPromises.then(() => {
                         //create item and parent to user
                         return db.Food.create(
                             food,
@@ -57,45 +59,46 @@ export function createRecords(req, db) {
     }); 
 }
 
-
-//TODO validate user before drop
-export function dropRecord(req, db) {
+export function dropRecord(foodId, userId, db) {
     return new Promise((resolve, reject) => {
-        let id = req.params.id;
-        db.Food.find({
-            where: { id: id }
-        }).then((food) => {
-            if (food === null) throw new Error(`could not find record with id: ${id}`);
-
-            return food.destroy(); 
+        db.User.find({
+            include: [ { model: db.Food, as: 'Foods', where: { id: foodId } } ],
+            where: { firstName: 'Bex', lastName: 'Hill' }
+            //where: { id: userId }
+        }).then(user => {
+            if (user === null) throw new Error(`could not find food with id: ${foodId}`);
+            
+            //found record, return the first 
+            return user.Foods[0].destroy();
         }).then(() => {
             resolve({ status: 'success'});
-        }).catch((err) => {
+        }).catch(err => {
             reject(err);
         });
     });
 }
 
-//TODO validate user before update
-export function updateRecord(req, db) {
+export function updateRecord(foodId, food, userId, db) {
     return new Promise((resolve, reject) => {
-        let id = req.params.id;
-        
-        db.Food.find({
-            where: { id: id }
-        }).then((food) => {
-            if (food === null) throw new Error(`could not find record with id: ${id}`);
+        db.User.find({
+            include: [ { model: db.Food, as: 'Foods', where: { id: food.Id } } ],
+            where: { firstName: 'Bex', lastName: 'Hill' }
+            //where: { id: userId }
+        }).then(user => {
+            if (user === null) throw new Error(`could not find food with id: ${foodId}`);
             
-            updateableFields.forEach((item) => {
-                if (req.body[item] !== undefined) food.set(item, req.body[item]);
+            //found record, return the first
+            let foodItem = user.Foods[0];
+            updateableFields.forEach(item => {
+                if (food[item] !== undefined) foodItem.set(item, food[item]);
             });
             
-            return food.save();
-        }).then((food) => {
-            resolve({ status: 'success', record: food })
-        }).catch((err) => {
+            return foodItem.save();
+        }).then(() => {
+            resolve({ status: 'success'});
+        }).catch(err => {
             reject(err);
-        });
+        })
     });
 }
 

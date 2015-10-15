@@ -19,7 +19,7 @@ export default class {
     }
 
     list(req, res) {
-        food.queryAll(req, this.db).then((result) => {
+        food.queryAll(null, this.db).then((result) => {
             res.status(200).send(result);    
         }).catch((err) => {
             res.status(400).send(err.message);
@@ -27,7 +27,7 @@ export default class {
     }
     
     detail(req, res) {
-        food.queryRecord(req, this.db).then((result) => {
+        food.queryRecord(req.params.id, null, this.db).then((result) => {
             res.status(200).send(result);    
         }).catch((err) => {
             res.status(400).send(err.message);
@@ -35,7 +35,7 @@ export default class {
     }
     
     create(req, res) {
-        food.createRecords(req, this.db).then((result) => {
+        food.createRecords(req.body, null, this.db).then((result) => {
             res.status(200).send(result);    
         }).catch((err) => {
             res.status(400).send(err.message);
@@ -43,7 +43,7 @@ export default class {
     }
 
     destroy(req, res) {
-        food.dropRecord(req, this.db).then((result) => {
+        food.dropRecord(req.params.id, null, this.db).then((result) => {
             res.status(200).send(result);    
         }).catch((err) => {
             res.status(400).send(err.message);
@@ -51,7 +51,7 @@ export default class {
     }
     
     update(req, res) {
-        food.updateRecord(req, this.db).then((result) => {
+        food.updateRecord(req.params.id, req.body, null, this.db).then((result) => {
             res.status(200).send(result); 
         }).catch((err) => {
             res.status(400).send(err.message);
