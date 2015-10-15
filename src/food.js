@@ -7,7 +7,7 @@ export function queryRecord(foodId, userId, db) {
         //where: { id: userId }
     }).then(user => {
         if (user === null) throw new Error(`could not find food with id: ${foodId}`);
-        return user.Foods[0];
+        return user;
     });
 }
 
@@ -58,7 +58,7 @@ export function dropRecord(foodId, userId, db) {
 
 export function updateRecord(foodId, food, userId, db) {
     return db.User.find({
-        include: [ { model: db.Food, as: 'Foods', where: { id: food.Id } } ],
+        include: [ { model: db.Food, as: 'Foods', where: { id: foodId } } ],
         where: { firstName: 'Bex', lastName: 'Hill' }
         //where: { id: userId }
     }).then(user => {
