@@ -26,6 +26,7 @@ export function createRecords(foods, userId, db, dbTransaction = null) {
     }).then(user => {
         //set up the transaction
         return db.db.transaction((t) => {
+            let createdFood = [];
             //break the foods into elements, and create transactions for each
             return foods.reduce((foodPromises, food) => {
                 //each food, append to foods promise chain
@@ -34,8 +35,13 @@ export function createRecords(foods, userId, db, dbTransaction = null) {
                     return db.Food.create(
                         food,
                         { transaction : dbTransaction || t }
-                    ).then((food) => {
-                        return user.addFood( food, { transaction : t });
+                    ).then(food => {
+                        return user.addFood(
+                            food,
+                            { transaction : t }
+                        ).then(user => {
+                            createdFood.push(food); return createdFood;
+                        });
                     });
                 });
             }, Promise.resolve());
