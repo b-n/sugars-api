@@ -23,7 +23,11 @@ export default class {
     }
 
     create(req, res) {
-        
+        entry.create(req.body, null, this.db).then(result => {
+            res.status(200).send({ result: 'success'});
+        }).catch(err => {
+            res.status(400).send(err.message);
+        })
     }
 
 }

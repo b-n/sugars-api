@@ -17,11 +17,12 @@ export function queryAll(userId, db) {
             entryFields.forEach(field => newEntry[field] = entry[field]);
             entry.Foods.forEach(food => {
                 let newFoodItem = {};
-                foodItemFields.forEach(foodItem => newFoodItem[foodItem] = food[foodItem]);
+                foodItemFields.forEach(field => newFoodItem[field] = food[field]);
                 newEntry.foodItems.push(newFoodItem);
             });
+            entries.push(newEntry);
         });
-        return userEntries;
+        return entries;
     });
 }
 
@@ -30,31 +31,38 @@ export function create(entry, userId, db) {
         return db.db.transaction(t => {
             //create userFood id map
             let userFoodMap = new Map();
-            let foodNameSet = new Set();
-            let newFoodItems = [];
             userFoods.Foods.forEach(food => {
-                userFoodMap.set(food.Id, food);
-                foodNameSet.set(food.name);
+                userFoodMap.set(food.id, food);
             });
             
             //do a bunch of validation
             entry.foodItems.forEach(food => {
                 //make sure all food items with id's exist against this user
-                if (food.id && !userFoodMap.has(food.Id)) throw new Error(`food does not exist with id: ${food.id}`);
+                if (food.id && !userFoodMap.has(food.id)) throw new Error(`food does not exist with id: ${food.id}`);
                 //all passed items need to hand in quantity and carbs    
-                if (!food.carbs || !food.quantity) throw new Error(`food must have quantity and carbs`);
-                //all food items without an id need a name and unit
-                if (!food.id && (!food.name || !food.unit)) throw new Error(`food must have a name or unit if an id is not specified`);
-                //duplicate item name check
-                if (!food.id) {
-                    if (foodNameSet.has(food.name)) throw new Error(`a food with this name exists or is already going to be created`);
-                    foodNameSet.set(food.name);
-                    newFoodItems.push(food);
-                }
+                if (!food.id || !food.carbs || !food.quantity) throw new Error(`food must have an id, quantity and carbs`);
             });
             
-            return food.createRecords(newFoodItems, userFoods.id, db, t).then(newItems => {
-                console.log(newItems);
+            let createdEntry = null;            
+
+            return db.Entry.create({
+                entryDate: new Date(entry.entryDate),
+                glucoseLevel: entry.glucoseLevel,
+                exerciseCarbs: entry.exerciseCarbs,
+                insulinShort: entry.insulinShort 
+            }, { transaction: t }).then(newEntry => {
+                createdEntry = newEntry;
+                return userFoods.addEntry(newEntry, { transaction: t });
+            }).then(() => {
+                return Promise.all(
+                    entry.foodItems.reduce((items, item) => {
+                        return items.concat(createdEntry.addFood(
+                            userFoodMap.get(item.id),
+                            { quantity: item.quantity, carbs: item.carbs},
+                            { transaction: t }
+                        ));
+                    }, [] )
+                );
             });
         });                       
     });

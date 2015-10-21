@@ -27,7 +27,7 @@ export default class {
     }
     
     detail(req, res) {
-        food.queryRecord(req.params.id, null, this.db).then(result => {
+        food.queryRecords([req.params.id], null, this.db).then(result => {
             res.status(200).send(result.Foods[0]);    
         }).catch((err) => {
             res.status(400).send(err.message);

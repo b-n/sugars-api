@@ -1,8 +1,8 @@
 const updateableFields = [ 'name', 'units', 'carbs', 'defaultAmount' ];
 
-export function queryRecord(foodId, userId, db) {
+export function queryRecords(foodIds, userId, db) {
     return db.User.find({
-        include: [ { model: db.Food, as: 'Foods', where: { id: foodId } } ],
+        include: [ { model: db.Food, as: 'Foods', where: { id: { $in : foodIds } } } ],
         where: { firstName: 'Bex', lastName: 'Hill' }
         //where: { id: userId }
     }).then(user => {
@@ -20,13 +20,13 @@ export function queryAll(userId, db) {
 }
 
 export function createRecords(foods, userId, db, dbTransaction = null) {
+    let createdFood = new Set();
     return db.User.find({
         where: { firstName: 'Bex', lastName: 'Hill' }
         //where: { id: userId }
     }).then(user => {
         //set up the transaction
         return db.db.transaction((t) => {
-            let createdFood = [];
             //break the foods into elements, and create transactions for each
             return foods.reduce((foodPromises, food) => {
                 //each food, append to foods promise chain
@@ -36,16 +36,17 @@ export function createRecords(foods, userId, db, dbTransaction = null) {
                         food,
                         { transaction : dbTransaction || t }
                     ).then(food => {
+                        createdFood.push(food.id);
                         return user.addFood(
                             food,
                             { transaction : t }
-                        ).then(user => {
-                            createdFood.push(food); return createdFood;
-                        });
+                        );
                     });
                 });
             }, Promise.resolve());
         }); 
+    }).then(() => {
+        return queryRecords(Array.from(createdFood), userId, db);
     });
 }
 
