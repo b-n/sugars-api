@@ -26,7 +26,7 @@ export function run() {
 
     app.listen(app.get('port'), function() {
         console.log('Up and running on all cylinders');
-        console.log(cowsay.say({ text: 'mooooooo'}));
+        console.log(cowsay.say({ text: 'Build an app they said, it would be fun they said'}));
     });
 
 }
