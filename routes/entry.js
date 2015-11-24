@@ -26,6 +26,7 @@ export default class {
         entry.create(req.body, null, this.db).then(result => {
             res.status(200).send({ result: 'success'});
         }).catch(err => {
+            console.log(err);
             res.status(400).send(err.message);
         })
     }

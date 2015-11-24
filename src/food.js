@@ -36,7 +36,9 @@ export function createRecords(foods, userId, db, dbTransaction = null) {
                         food,
                         { transaction : dbTransaction || t }
                     ).then(food => {
-                        createdFood.push(food.id);
+                        console.log('here');
+                        createdFood.add(food.id);
+                        console.log('here too');
                         return user.addFood(
                             food,
                             { transaction : t }
